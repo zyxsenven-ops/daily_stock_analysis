@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860">
+  <defs>
+    <style>
+      .title{font:700 30px 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#111827}
+      .h{font:700 20px 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#111827}
+      .t{font:16px 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#1f2937}
+      .s{font:14px 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#374151}
+      .goal{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}
+      .path{fill:#ecfdf5;stroke:#059669;stroke-width:2}
+      .mid{fill:#f0f9ff;stroke:#0284c7;stroke-width:2}
+      .line{stroke:#0ea5e9;stroke-width:2;fill:none;marker-end:url(#arr)}
+    </style>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <polygon points="0,0 8,4 0,8" fill="#0ea5e9"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="860" fill="#ffffff"/>
+  <text x="700" y="48" class="title" text-anchor="middle">产品目标 ↔ 产品实现路径（对标预览图）</text>
+
+  <rect x="60" y="90" width="500" height="700" rx="14" class="goal"/>
+  <text x="310" y="130" class="h" text-anchor="middle">产品设计目标端（市场需求 / 客户需求）</text>
+
+  <rect x="840" y="90" width="500" height="700" rx="14" class="path"/>
+  <text x="1090" y="130" class="h" text-anchor="middle">产品实现路径端（基于现有产品优化）</text>
+
+  <rect x="590" y="220" width="220" height="420" rx="14" class="mid"/>
+  <text x="700" y="255" class="h" text-anchor="middle">桥接与对标</text>
+  <text x="700" y="288" class="s" text-anchor="middle">路径 → 目标映射</text>
+  <text x="700" y="315" class="s" text-anchor="middle">差距识别</text>
+  <text x="700" y="342" class="s" text-anchor="middle">优先级排序</text>
+  <text x="700" y="369" class="s" text-anchor="middle">迭代闭环</text>
+
+  <rect x="90" y="170" width="440" height="120" rx="12" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="110" y="205" class="t">目标 G1：提升目标客户转化率</text>
+  <text x="110" y="232" class="s">指标示例：季度转化率 +20%</text>
+  <text x="110" y="257" class="s">关注：新手激活、核心流程完成率</text>
+
+  <rect x="90" y="320" width="440" height="120" rx="12" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="110" y="355" class="t">目标 G2：提升客户留存与复购</text>
+  <text x="110" y="382" class="s">指标示例：90日留存率 &gt; 55%</text>
+  <text x="110" y="407" class="s">关注：周复盘参与率、复访频次</text>
+
+  <rect x="90" y="470" width="440" height="120" rx="12" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="110" y="505" class="t">目标 G3：建立差异化产品口碑</text>
+  <text x="110" y="532" class="s">指标示例：NPS &gt; 45</text>
+  <text x="110" y="557" class="s">关注：可解释性、风险提示、闭环价值</text>
+
+  <rect x="870" y="170" width="440" height="120" rx="12" fill="#ffffff" stroke="#6ee7b7"/>
+  <text x="890" y="205" class="t">路径 P1：核心流程提效</text>
+  <text x="890" y="232" class="s">动作：性能优化、信号质量、时效提升</text>
+  <text x="890" y="257" class="s">里程碑：端到端耗时 &lt; 90s</text>
+
+  <rect x="870" y="320" width="440" height="120" rx="12" fill="#ffffff" stroke="#6ee7b7"/>
+  <text x="890" y="355" class="t">路径 P2：策略执行闭环</text>
+  <text x="890" y="382" class="s">动作：计划-执行-复盘任务面板</text>
+  <text x="890" y="407" class="s">里程碑：周复盘完成率 &gt; 70%</text>
+
+  <rect x="870" y="470" width="440" height="120" rx="12" fill="#ffffff" stroke="#6ee7b7"/>
+  <text x="890" y="505" class="t">路径 P3：分层用户体验</text>
+  <text x="890" y="532" class="s">动作：新手/进阶/专业分层输出</text>
+  <text x="890" y="557" class="s">里程碑：新手首周激活率 +25%</text>
+
+  <path d="M530 230 C560 230, 565 255, 590 255" class="line"/>
+  <path d="M530 380 C560 380, 565 315, 590 315" class="line"/>
+  <path d="M530 530 C560 530, 565 375, 590 375" class="line"/>
+
+  <path d="M810 255 C835 255, 840 230, 870 230" class="line"/>
+  <path d="M810 315 C835 315, 840 380, 870 380" class="line"/>
+  <path d="M810 375 C835 375, 840 530, 870 530" class="line"/>
+
+  <text x="700" y="710" class="s" text-anchor="middle">说明：若查看交互版，请打开 docs/product_strategy_map.html（支持节点编辑、差距检查、JSON 导入导出）</text>
+</svg>

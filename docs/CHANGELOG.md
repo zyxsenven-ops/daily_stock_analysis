@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 文档
 
 - 新增云服务器 Web 界面部署与访问教程 (Fixes #686)
+- 新增离线可交互产品目标-实现路径对标图模板：`docs/product_strategy_map.html`（支持双侧目标/路径节点、桥接关系、差距检查、JSON 导入导出）
+- 新增可直接预览的 Markdown 版本：`docs/product_strategy_map.md`（含 Mermaid 路线图 + 对标表），解决部分环境下 HTML 无法预览的问题
+- 新增静态预览图：`docs/product_strategy_map_preview.svg`，在不支持 HTML/Mermaid 的平台也可直接查看效果
 
 ### 修复
 

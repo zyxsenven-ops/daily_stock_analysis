@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>产品目标-实现路径对标图（离线版）</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --goal: #6d28d9;
+      --path: #065f46;
+      --link: #0ea5e9;
+      --warn: #b45309;
+      --line: #d1d5db;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    button, .file-label {
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button.primary { border-color: #2563eb; color: #2563eb; }
+    button.danger { border-color: var(--danger); color: var(--danger); }
+    .file-label input { display: none; }
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .board-wrap {
+      position: relative;
+      height: calc(100vh - 132px);
+      overflow: auto;
+      padding: 18px;
+    }
+    .board {
+      min-width: 1200px;
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 300px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    }
+    .panel h2 {
+      margin: 4px 4px 12px;
+      font-size: 16px;
+    }
+    .center {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 10px;
+    }
+    .node {
+      border: 1px solid var(--line);
+      border-left-width: 5px;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fff;
+      position: relative;
+    }
+    .node.goal { border-left-color: var(--goal); }
+    .node.path { border-left-color: var(--path); }
+    .node-title {
+      margin: 0 0 6px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .node-meta { font-size: 12px; color: var(--muted); }
+    .node-actions { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .mini {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid;
+    }
+    .badge-progress { border-color: #10b981; color: #047857; }
+    .badge-gap { border-color: #f59e0b; color: #b45309; }
+    .bridge {
+      background: #fff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      text-align: left;
+      font-size: 12px;
+    }
+    .bridge strong { color: var(--link); }
+    .legend {
+      display: flex;
+      gap: 12px;
+      padding: 6px 2px 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .legend .g::before { background: var(--goal); }
+    .legend .p::before { background: var(--path); }
+    .legend .l::before { background: var(--link); }
+
+    dialog {
+      border: none;
+      border-radius: 12px;
+      width: min(700px, 90vw);
+      padding: 0;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+    }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.45); }
+    .modal {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .modal h3 { margin: 0 0 4px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 12px; color: var(--muted); }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    textarea { min-height: 70px; resize: vertical; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    @media (max-width: 1100px) {
+      .board { grid-template-columns: 1fr; min-width: 0; }
+      .center { order: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="toolbar">
+      <button class="primary" id="addGoalBtn">+ 新增设计目标</button>
+      <button class="primary" id="addPathBtn">+ 新增实现路径</button>
+      <button id="autoGapBtn">自动识别差距</button>
+      <button id="exportBtn">导出 JSON</button>
+      <label class="file-label">导入 JSON<input id="importInput" type="file" accept="application/json" /></label>
+      <button class="danger" id="resetBtn">重置示例数据</button>
+      <span class="hint">离线可用：双击节点可快速编辑；通过“关联目标ID”把路径连到目标。</span>
+    </div>
+    <div class="legend">
+      <span class="g">产品设计目标（市场/客户需求）</span>
+      <span class="p">产品实现路径（可多路线并行）</span>
+      <span class="l">桥接关系（路径→目标）</span>
+    </div>
+  </header>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <dialog id="editor">
+    <form class="modal" method="dialog" id="editorForm">
+      <h3 id="editorTitle">编辑节点</h3>
+      <input type="hidden" id="nodeId" />
+      <input type="hidden" id="nodeType" />
+      <div class="field">
+        <label for="title">标题</label>
+        <input id="title" required />
+      </div>
+      <div class="field">
+        <label for="desc">描述</label>
+        <textarea id="desc" placeholder="如：目标定义/关键动作/约束条件"></textarea>
+      </div>
+      <div class="field">
+        <label for="metric">量化指标（目标可填：NPS、转化率等；路径可填：里程碑）</label>
+        <input id="metric" />
+      </div>
+      <div class="field" id="goalLinkField">
+        <label for="goalLinks">关联目标ID（仅路径节点，逗号分隔）</label>
+        <input id="goalLinks" placeholder="例如：G1,G3" />
+      </div>
+      <div class="field">
+        <label for="status">状态</label>
+        <select id="status">
+          <option value="planned">计划中</option>
+          <option value="doing">推进中</option>
+          <option value="done">已完成</option>
+          <option value="risk">存在风险</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="deleteBtn" class="danger">删除</button>
+        <button type="button" id="cancelBtn">取消</button>
+        <button type="submit" class="primary">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const storageKey = "dsa-product-map-v1";
+    const sampleData = {
+      goals: [
+        { id: "G1", title: "提升目标客户转化率", desc: "围绕中小投资团队的策略执行效率，缩短从分析到下单决策的时间。", metric: "季度转化率 +20%", status: "doing" },
+        { id: "G2", title: "提升客户留存与复购", desc: "让用户形成‘每日看板 + 周复盘’使用习惯，降低流失。", metric: "90日留存率 > 55%", status: "planned" },
+        { id: "G3", title: "建立差异化产品口碑", desc: "强调‘可解释决策 + 风险提示 + 闭环执行’的核心价值。", metric: "NPS > 45", status: "planned" }
+      ],
+      paths: [
+        { id: "P1", title: "路径A：核心流程提效", desc: "优化分析耗时、信号聚合质量与推送时效，优先保障高频场景。", metric: "端到端耗时 < 90s", status: "doing", goalLinks: ["G1", "G2"] },
+        { id: "P2", title: "路径B：策略执行闭环", desc: "增加‘计划-执行-复盘’任务面板，跟踪策略完成率和偏差原因。", metric: "周复盘完成率 > 70%", status: "planned", goalLinks: ["G2", "G3"] },
+        { id: "P3", title: "路径C：分层用户体验", desc: "对新手/进阶/专业用户输出不同粒度的建议与可视化深度。", metric: "新手首周激活率 +25%", status: "planned", goalLinks: ["G1"] }
+      ]
+    };
+
+    let data = loadData();
+    const board = document.getElementById("board");
+    const editor = document.getElementById("editor");
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : structuredClone(sampleData);
+      } catch {
+        return structuredClone(sampleData);
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    function statusText(status) {
+      return ({ planned: "计划中", doing: "推进中", done: "已完成", risk: "存在风险" })[status] || "计划中";
+    }
+
+    function render() {
+      const bridges = buildBridges();
+      board.innerHTML = `
+        <section class="panel">
+          <h2>🎯 产品设计目标（Market / Customer Needs）</h2>
+          ${data.goals.map(nodeCard("goal")).join("") || "<p class='hint'>暂无目标节点</p>"}
+        </section>
+        <section>
+          <div class="center">实现路径如何对标目标（桥接层）</div>
+          ${bridges || "<div class='bridge'>暂无桥接关系，请给路径配置关联目标ID。</div>"}
+        </section>
+        <section class="panel">
+          <h2>🛠 产品实现路径（Optimization Routes）</h2>
+          ${data.paths.map(nodeCard("path")).join("") || "<p class='hint'>暂无路径节点</p>"}
+        </section>`;
+
+      board.querySelectorAll(".edit").forEach(btn => {
+        btn.addEventListener("click", () => openEditor(btn.dataset.type, btn.dataset.id));
+      });
+      board.querySelectorAll(".node").forEach(el => {
+        el.addEventListener("dblclick", () => openEditor(el.dataset.type, el.dataset.id));
+      });
+    }
+
+    function nodeCard(type) {
+      return item => {
+        const badgeClass = item.status === "done" ? "badge-progress" : "badge-gap";
+        return `<article class="node ${type}" data-type="${type}" data-id="${item.id}">
+          <h3 class="node-title">
+            <span>${item.title}</span>
+            <span class="badge ${badgeClass}">${statusText(item.status)}</span>
+          </h3>
+          <div class="node-meta">ID: ${item.id} ${type === "path" ? " | 关联目标: " + (item.goalLinks?.join(",") || "无") : ""}</div>
+          <p class="node-meta">${item.desc || ""}</p>
+          <p class="node-meta">📏 ${item.metric || "未设置量化指标"}</p>
+          <div class="node-actions"><button class="mini edit" data-type="${type}" data-id="${item.id}">编辑</button></div>
+        </article>`;
+      };
+    }
+
+    function buildBridges() {
+      const goalMap = new Map(data.goals.map(g => [g.id, g.title]));
+      const lines = [];
+      for (const p of data.paths) {
+        (p.goalLinks || []).forEach(gid => {
+          if (goalMap.has(gid)) {
+            lines.push(`<div class="bridge"><strong>${p.id}</strong> → <strong>${gid}</strong><br>${p.title} 对齐 ${goalMap.get(gid)}</div>`);
+          }
+        });
+      }
+      return lines.join("");
+    }
+
+    function openEditor(type, id) {
+      const list = type === "goal" ? data.goals : data.paths;
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+
+      nodeId.value = item.id;
+      nodeType.value = type;
+      title.value = item.title || "";
+      desc.value = item.desc || "";
+      metric.value = item.metric || "";
+      status.value = item.status || "planned";
+      goalLinks.value = (item.goalLinks || []).join(",");
+      goalLinkField.style.display = type === "path" ? "grid" : "none";
+      deleteBtn.style.display = "inline-block";
+      editorTitle.textContent = `编辑${type === "goal" ? "目标" : "路径"}节点`;
+      editor.showModal();
+    }
+
+    function createNode(type) {
+      const list = type === "goal" ? data.goals : data.paths;
+      const prefix = type === "goal" ? "G" : "P";
+      const nextNum = Math.max(0, ...list.map(x => Number((x.id || "").replace(prefix, "")) || 0)) + 1;
+      const id = `${prefix}${nextNum}`;
+      const item = { id, title: "", desc: "", metric: "", status: "planned", ...(type === "path" ? { goalLinks: [] } : {}) };
+      list.push(item);
+      saveData();
+      render();
+      openEditor(type, id);
+    }
+
+    editorForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const type = nodeType.value;
+      const list = type === "goal" ? data.goals : data.paths;
+      const item = list.find(x => x.id === nodeId.value);
+      if (!item) return;
+      item.title = title.value.trim() || item.id;
+      item.desc = desc.value.trim();
+      item.metric = metric.value.trim();
+      item.status = status.value;
+      if (type === "path") {
+        item.goalLinks = goalLinks.value.split(",").map(s => s.trim()).filter(Boolean);
+      }
+      saveData();
+      render();
+      editor.close();
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      const type = nodeType.value;
+      const list = type === "goal" ? data.goals : data.paths;
+      const idx = list.findIndex(x => x.id === nodeId.value);
+      if (idx >= 0) list.splice(idx, 1);
+      if (type === "goal") {
+        data.paths.forEach(p => p.goalLinks = (p.goalLinks || []).filter(id => id !== nodeId.value));
+      }
+      saveData();
+      render();
+      editor.close();
+    });
+
+    cancelBtn.addEventListener("click", () => editor.close());
+    addGoalBtn.addEventListener("click", () => createNode("goal"));
+    addPathBtn.addEventListener("click", () => createNode("path"));
+
+    autoGapBtn.addEventListener("click", () => {
+      const linkedGoals = new Set(data.paths.flatMap(p => p.goalLinks || []));
+      const uncovered = data.goals.filter(g => !linkedGoals.has(g.id));
+      if (!uncovered.length) {
+        alert("当前目标均已有实现路径覆盖 ✅");
+        return;
+      }
+      alert(`以下目标尚未被路径覆盖：\n${uncovered.map(g => `- ${g.id} ${g.title}`).join("\n")}`);
+    });
+
+    exportBtn.addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `product_strategy_map_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    importInput.addEventListener("change", async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!Array.isArray(parsed.goals) || !Array.isArray(parsed.paths)) {
+          throw new Error("格式缺少 goals/paths 数组");
+        }
+        data = parsed;
+        saveData();
+        render();
+      } catch (err) {
+        alert(`导入失败：${err.message}`);
+      } finally {
+        e.target.value = "";
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      if (!confirm("确认重置为示例数据？会覆盖当前本地存档。")) return;
+      data = structuredClone(sampleData);
+      saveData();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
