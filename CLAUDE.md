@@ -12,7 +12,10 @@ AI-powered daily stock analysis system for A-shares (CN), HK stocks, and US stoc
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+# Several legacy packages (pytdx, google-search-results, newspaper3k, jsonpath) use old
+# setup.py patterns that fail with setuptools>=65.6 due to a removed install_layout
+# attribute. The fix is to set SETUPTOOLS_USE_DISTUTILS=stdlib before pip install.
+SETUPTOOLS_USE_DISTUTILS=stdlib pip install -r requirements.txt
 pip install flake8 pytest
 
 # Run the full CI gate (syntax + lint + offline tests)

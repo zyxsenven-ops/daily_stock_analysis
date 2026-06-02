@@ -38,7 +38,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# SETUPTOOLS_USE_DISTUTILS=stdlib：规避 setuptools>=65.6 移除 install_layout 导致
+# pytdx / google-search-results / newspaper3k 等旧式 setup.py 包构建失败的问题。
+RUN SETUPTOOLS_USE_DISTUTILS=stdlib pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
 COPY *.py ./
