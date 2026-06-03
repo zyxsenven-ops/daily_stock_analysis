@@ -50,7 +50,9 @@ jobs:
       - name: 安装依赖
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          # SETUPTOOLS_USE_DISTUTILS=stdlib: 修复 pytdx/google-search-results/newspaper3k 等
+          # 旧式 setup.py 包在 setuptools>=65.6 下构建失败的问题（install_layout 属性被移除）
+          SETUPTOOLS_USE_DISTUTILS=stdlib pip install -r requirements.txt
       
       - name: 创建必要目录
         run: |
